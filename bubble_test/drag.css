@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+.drag {
+  display: flex;
+}
+
+li{
+  border: solid 1px;
+  width: 150px;
+  margin: 10px;
+  padding: 5px;
+}
+
+li:hover{
+  cursor: pointer;
+}
+
+ul{
+  border: solid 1px;
+  width: 200px;
+  min-height: 350px;
+  margin: 15px;
+  list-style-type: none;
+}
