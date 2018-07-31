@@ -21,7 +21,7 @@ def selectionSort (arr):
 
 	arrLen = len(arr)
 
-	for startIndex in  range(arrLen):
+	for startIndex in range(arrLen):
 		minIndex = startIndex
 		for restIndex in range(startIndex+1, arrLen):
 			if (arr[restIndex] < arr[minIndex]):
@@ -36,9 +36,7 @@ def selectionSort (arr):
 # in-place comparison sort
 # O(n^2)
 
-# keep running through the list and store index of min value in minIndex
-# swap arr[minIndex] and arr[i]
-# increase minIndex by 1 and repeat the process among rest of the elements until the list is sorted
+#toCompIndex will be come part of the sorted array after swap
 
 # faster than selection sort in practice 
 # because of fewer comparisons
@@ -60,6 +58,8 @@ def insertionSort (arr):
 	print("arr after sorted: ", *arr)
 
 ######################################insertionsort#######################################
+
+
 
 ######################################tests#######################################
 arr = [1, 5, 4, 6, 7, 0, 9, 2, 3, 8]
