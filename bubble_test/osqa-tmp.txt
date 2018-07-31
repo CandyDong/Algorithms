@@ -1,0 +1,386 @@
+#dccfda
+
+
+ <!--{% for space in spaces %}-->
+
+                          <!--{% if forloop.counter < 5 %}-->
+                              <!--<div class="space-item col-xs-12 col-sm-3">-->
+                                  <!--<a href="{{ space.get_absolute_url }}" >-->
+                                      <!--<h3 class="space-name" >{{ space.space_name }}</h3>-->
+                                      <!--<div class="space-pic" style="background-image: url(../../m/default/media/images/{{ space.space_name.lower }}.png)"></div>-->
+                                  <!--</a>-->
+                              <!--</div>-->
+                          <!--{% endif %}-->
+
+
+// space bar scroller js
+        var main = {
+
+            init: function () {
+                this.vars();
+                this.initContainer();
+                this.events();
+                this.draw();
+                return this;
+            },
+
+
+            vars: function () {
+                //called by this.init
+        //        this.S = 1;
+        //        this.loadCnt = 0;
+        //        this.maxLoadCnt = 8;
+        //        this.BLOB_DURATION = 500;
+        //        this.progressStep = (150/this.maxLoadCnt)*(1/16);
+
+                this.getDOMElements();
+
+                this.particleRadius  = parseInt(getComputedStyle(this.particles[0]).width, 10)/2;
+                this.particlesLength = this.particles.length;
+                this.particleBuffer = null;
+                console.log("particleRadius: ", this.particleRadius);
+                console.log("particlesLength: ", this.particlesLength);
+
+                this.blobBase = 1.6;
+                this.blob = this.blobBase;
+                this.blobShift = this.blobBase;
+
+        //        this.xOffset = this.particleRadius+25;
+        //        this.yOffset = 1.4*this.particleRadius;
+                this.xOffset = 0;
+                this.yOffset = 0;
+
+                console.log("xOffset: ", this.xOffset);
+                console.log("yOffset: ", this.yOffset);
+
+                var styles = getComputedStyle(this.particlesContainer);
+                this.width = parseInt(styles.width, 10);
+                this.height = parseInt(styles.height, 10);
+
+                this.calcDimentions();
+
+                var i = this.particlesLength;
+                while(i--) {
+                    var particle = this.particles[i];
+                    particle.x = parseInt(particle.getAttribute('data-left'), 10);
+                    particle.y = parseInt(particle.getAttribute('data-top'), 10);
+                }
+            },
+
+
+            getDOMElements: function () {
+                //called by this.vars
+                this.particlesContainer = document.querySelector('.space-thumbnails-wrapper');
+                this.particles = document.querySelectorAll('.particle');
+            },
+
+
+            draw: function () {
+                //called by this.init
+                var origin = `${this.bubbleCenter.x}px ${this.bubbleCenter.y}px`,
+                    h = mojs.h,
+                    inEasing = mojs.easing.cubic.in,
+                    i = this.particlesLength;
+
+                //css property with vendor prefixes
+                h.setPrefixedStyle(this.particlesContainer, 'perspective-origin', origin);
+
+                while(i--) {
+                  this.particleBuffer = this.particles[i];
+                  var x      = Math.abs(this.bubbleCenter.x-this.particleBuffer.x),
+                      y      = Math.abs(this.bubbleCenter.y-this.particleBuffer.y),
+                      radius = Math.sqrt(x*x + y*y),
+                      a      = this.blob - (2*radius)/this.size,
+                      b      = this.blobShift - (2*radius)/this.size, scaleMax = 1;
+
+
+
+                  var delta = mojs.helpers.clamp(inEasing(a), 0.03, scaleMax),
+                      deltaShift = mojs.helpers.clamp((inEasing(b)), 0.03, scaleMax),
+                      isDeltaChanged = this.particleBuffer.prevDelta !== delta;
+
+
+
+                  if (isDeltaChanged || this.particleBuffer.prevDeltaShift !== deltaShift) {
+                  var translateZ = -150*(inEasing(1-deltaShift)),
+                      transform  = `scale(${delta}) translateZ(${translateZ}px)`;
+                  h.setPrefixedStyle(this.particleBuffer, 'transform', transform);
+                  this.particleBuffer.prevDelta      = delta;
+                  this.particleBuffer.prevDeltaShift = deltaShift;
+                  }
+                }
+
+                requestAnimationFrame(this.draw.bind(this));
+            },
+
+
+            initContainer: function () {
+                this.iscroll = new IScroll('.space-thumbnails-wrapper', {
+                    scrollX: true,
+                    freeScroll: true,
+                    mouseWheel: true,
+                    probeType: 3
+                });
+                var x = -this.centerX +  this.wWidth/2 + this.xOffset;
+                var y = -this.centerY + this.wHeight/2 +this.yOffset;
+                this.iscroll.scrollTo(x,y,10);
+            },
+
+
+            calcDimentions: function () {
+                //called by this.vars
+                this.wWidth = window.innerWidth;
+                this.wHeight = window.innerHeight;
+
+                console.log("wWidth: %d, wHeight: %d", this.wWidth, this.wHeight);
+
+                this.centerX = this.width/2 - this.wWidth/2;
+                this.centerY = this.height/2 - this.wHeight/2;
+
+                console.log("centerX: %d, centerY: %d", this.centerX, this.centerY);
+
+                this.bubbleCenter = {x: this.centerX, y: this.centerY};
+
+
+
+                var x = Math.sqrt(this.wHeight*this.wHeight);
+                var y = Math.sqrt(this.wWidth*this.wWidth);
+                this.size = Math.min(x,y);
+            },
+
+
+            events: function () {
+                //called by this.init
+                window.addEventListener('resize', () => {
+                    this.calcDimentions();
+                    this.setBubblePosition();
+                    this.replaceTests();
+                });
+                this.iscroll.on('scroll', this.setBubblePosition.bind(this));
+            },
+
+            setBubblePosition: function () {
+                this.bubbleCenter.x = -this.iscroll.x + this.wWidth/2 +this.xOffset;
+                this.bubbleCenter.y = -this.iscroll.y + this.wHeight/2 +this.yOffset;
+
+        //        console.log("bubbleCenter.x: %d, bubbleCenter.y: %d", this.bubbleCenter.x, this.bubbleCenter.y);
+            },
+
+
+            replaceTests: function () {
+
+            }
+        };
+
+        main.init();
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+@-webkit-keyframes particle-animation-1 {
+  100% {
+    -webkit-transform: translate3d(46vw, 52vh, 45px);
+            transform: translate3d(46vw, 52vh, 45px);
+  }
+}
+
+@keyframes particle-animation-1 {
+  100% {
+    -webkit-transform: translate3d(46vw, 52vh, 45px);
+            transform: translate3d(46vw, 52vh, 45px);
+  }
+}
+.particle#js-particle-1 {
+  -webkit-animation: particle-animation-1 60s infinite;
+          animation: particle-animation-1 60s infinite;
+  -webkit-animation-delay: -0.2s;
+          animation-delay: -0.2s;
+  -webkit-transform: translate3d(27vw, 37vh, 45px);
+          transform: translate3d(27vw, 37vh, 45px);
+}
+
+@-webkit-keyframes particle-animation-2 {
+  100% {
+    -webkit-transform: translate3d(21vw, 59vh, 31px);
+            transform: translate3d(21vw, 59vh, 31px);
+  }
+}
+
+@keyframes particle-animation-2 {
+  100% {
+    -webkit-transform: translate3d(21vw, 59vh, 31px);
+            transform: translate3d(21vw, 59vh, 31px);
+  }
+}
+.particle#js-particle-2 {
+  -webkit-animation: particle-animation-2 60s infinite;
+          animation: particle-animation-2 60s infinite;
+    -webkit-animation-delay: -0.4s;
+          animation-delay: -0.4s;
+  -webkit-transform: translate3d(80vw, 79vh, 63px);
+          transform: translate3d(80vw, 79vh, 63px);
+}
+
+@-webkit-keyframes particle-animation-3 {
+  100% {
+    -webkit-transform: translate3d(54vw, 12vh, 49px);
+            transform: translate3d(54vw, 12vh, 49px);
+  }
+}
+
+@keyframes particle-animation-3 {
+  100% {
+    -webkit-transform: translate3d(54vw, 12vh, 49px);
+            transform: translate3d(54vw, 12vh, 49px);
+  }
+}
+.particle#js-particle-3 {
+  -webkit-animation: particle-animation-3 60s infinite;
+          animation: particle-animation-3 60s infinite;
+  -webkit-animation-delay: -0.6s;
+          animation-delay: -0.6s;
+  -webkit-transform: translate3d(61vw, 76vh, 98px);
+          transform: translate3d(61vw, 76vh, 98px);
+}
+
+@-webkit-keyframes particle-animation-4 {
+  100% {
+    -webkit-transform: translate3d(18vw, 21vh, 45px);
+            transform: translate3d(18vw, 21vh, 45px);
+  }
+}
+
+@keyframes particle-animation-4 {
+  100% {
+    -webkit-transform: translate3d(18vw, 21vh, 45px);
+            transform: translate3d(18vw, 21vh, 45px);
+  }
+}
+.particle#js-particle-4 {
+  -webkit-animation: particle-animation-4 60s infinite;
+          animation: particle-animation-4 60s infinite;
+  -webkit-animation-delay: -0.8s;
+          animation-delay: -0.8s;
+  -webkit-transform: translate3d(83vw, 71vh, 20px);
+          transform: translate3d(83vw, 71vh, 20px);
+}
+
+@-webkit-keyframes particle-animation-5 {
+  100% {
+    -webkit-transform: translate3d(66vw, 46vh, 76px);
+            transform: translate3d(66vw, 46vh, 76px);
+  }
+}
+
+@keyframes particle-animation-5 {
+  100% {
+    -webkit-transform: translate3d(66vw, 46vh, 76px);
+            transform: translate3d(66vw, 46vh, 76px);
+  }
+}
+.particle#js-particle-5 {
+  -webkit-animation: particle-animation-5 60s infinite;
+          animation: particle-animation-5 60s infinite;
+  -webkit-animation-delay: -1s;
+          animation-delay: -1s;
+  -webkit-transform: translate3d(34vw, 36vh, 70px);
+          transform: translate3d(34vw, 36vh, 70px);
+}
+
+@-webkit-keyframes particle-animation-6 {
+  100% {
+    -webkit-transform: translate3d(27vw, 15vh, 27px);
+            transform: translate3d(27vw, 15vh, 27px);
+  }
+}
+
+@keyframes particle-animation-6 {
+  100% {
+    -webkit-transform: translate3d(27vw, 15vh, 27px);
+            transform: translate3d(27vw, 15vh, 27px);
+  }
+}
+.particle#js-particle-6 {
+  -webkit-animation: particle-animation-6 60s infinite;
+          animation: particle-animation-6 60s infinite;
+  -webkit-animation-delay: -1.2s;
+          animation-delay: -1.2s;
+  -webkit-transform: translate3d(53vw, 58vh, 13px);
+          transform: translate3d(53vw, 58vh, 13px);
+}
+
+@-webkit-keyframes particle-animation-7 {
+  100% {
+    -webkit-transform: translate3d(70vw, 57vh, 15px);
+            transform: translate3d(70vw, 57vh, 15px);
+  }
+}
+
+@keyframes particle-animation-7 {
+  100% {
+    -webkit-transform: translate3d(70vw, 57vh, 15px);
+            transform: translate3d(70vw, 57vh, 15px);
+  }
+}
+.particle#js-particle-7 {
+  -webkit-animation: particle-animation-7 60s infinite;
+          animation: particle-animation-7 60s infinite;
+  -webkit-animation-delay: -1.4s;
+          animation-delay: -1.4s;
+  -webkit-transform: translate3d(70vw, 14vh, 91px);
+          transform: translate3d(70vw, 14vh, 91px);
+}
+
+@-webkit-keyframes particle-animation-8 {
+  100% {
+    -webkit-transform: translate3d(78vw, 46vh, 43px);
+            transform: translate3d(78vw, 46vh, 43px);
+  }
+}
+
+@keyframes particle-animation-8 {
+  100% {
+    -webkit-transform: translate3d(78vw, 46vh, 43px);
+            transform: translate3d(78vw, 46vh, 43px);
+  }
+}
+.particle#js-particle-8 {
+  -webkit-animation: particle-animation-8 60s infinite;
+          animation: particle-animation-8 60s infinite;
+  -webkit-animation-delay: -1.6s;
+          animation-delay: -1.6s;
+  -webkit-transform: translate3d(10vw, 9vh, 98px);
+          transform: translate3d(10vw, 9vh, 98px);
+}
+
+@-webkit-keyframes particle-animation-9 {
+  100% {
+    -webkit-transform: translate3d(90vw, 8vh, 61px);
+            transform: translate3d(90vw, 8vh, 61px);
+  }
+}
+
+@keyframes particle-animation-9 {
+  100% {
+    -webkit-transform: translate3d(90vw, 8vh, 61px);
+            transform: translate3d(90vw, 8vh, 61px);
+  }
+}
+.particle#js-particle-9 {
+  -webkit-animation: particle-animation-9 60s infinite;
+          animation: particle-animation-9 60s infinite;
+  -webkit-animation-delay: -1.8s;
+          animation-delay: -1.8s;
+  -webkit-transform: translate3d(17vw, 55vh, 15px);
+          transform: translate3d(17vw, 55vh, 15px);
+}

@@ -58,6 +58,8 @@ var main = {
         this.particles = document.querySelectorAll('.particle');
         this.blobCircle = document.querySelector('#js-blob-circle');
         this.content = document.querySelector('#js-content');
+        this.testOrigin = document.querySelector('.test-origin');
+        this.testBubbleCenter = document.querySelector('.test-bubble-center');
     },
     
     
@@ -70,7 +72,7 @@ var main = {
         
         //css property with vendor prefixes
         h.setPrefixedStyle(this.particlesContainer, 'perspective-origin', origin);
-        
+      
         while(i--) {
           this.particleBuffer = this.particles[i];
           var x      = Math.abs(this.bubbleCenter.x-this.particleBuffer.x),
@@ -78,11 +80,19 @@ var main = {
               radius = Math.sqrt(x*x + y*y),
               a      = this.blob - (2*radius)/this.size,
               b      = this.blobShift - (2*radius)/this.size, scaleMax = 1;
-
+          
+          $(this.testBubbleCenter).css("top", `${this.bubbleCenter.x}px`);
+          $(this.testBubbleCenter).css("left", `${this.bubbleCenter.y}px`);
+          
           var delta = mojs.helpers.clamp(inEasing(a), 0.03, scaleMax),
-              deltaShift = h.clamp((inEasing(b)), 0.03, scaleMax),
+              deltaShift = mojs.helpers.clamp((inEasing(b)), 0.03, scaleMax),
               isDeltaChanged = this.particleBuffer.prevDelta !== delta;
-
+          
+          if (delta == 1) {
+            $(this.testOrigin).css("top", $(this.particleBuffer).offset().top);
+            $(this.testOrigin).css("left", $(this.particleBuffer).offset().left);
+          }
+          
           if (isDeltaChanged || this.particleBuffer.prevDeltaShift !== deltaShift) {
           var translateZ = -150*(inEasing(1-deltaShift)),
               transform  = `scale(${delta}) translateZ(${translateZ}px)`;
@@ -122,6 +132,9 @@ var main = {
         console.log("centerX: %d, centerY: %d", this.centerX, this.centerY);
         
         this.bubbleCenter = {x: this.centerX, y: this.centerY};
+      
+       
+      
         var x = Math.sqrt(this.wHeight*this.wHeight);
         var y = Math.sqrt(this.wWidth*this.wWidth);
         this.size = Math.min(x,y);
@@ -133,6 +146,7 @@ var main = {
         window.addEventListener('resize', () => {
             this.calcDimentions();
             this.setBubblePosition();
+            this.replaceTests();
         });
         this.iscroll.on('scroll', this.setBubblePosition.bind(this));
     },
@@ -142,6 +156,11 @@ var main = {
         this.bubbleCenter.y = -this.iscroll.y + this.wHeight/2 +this.yOffset;
         
 //        console.log("bubbleCenter.x: %d, bubbleCenter.y: %d", this.bubbleCenter.x, this.bubbleCenter.y);
+    },
+  
+    
+    replaceTests: function () {
+        
     }
 };
 
